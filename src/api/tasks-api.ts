@@ -2,12 +2,13 @@ import {api} from "./api.ts";
 import {Task} from "../type/task.ts";
 
 const header = {
-    'Content-Type': 'application/json;charset=utf-8'
+    'Content-Type': 'application/json'
 }
 export const tasksApi = api.injectEndpoints({
     endpoints: build => ({
         getTasks: build.query({
             query: () => '/ToDoList/Tasks',
+            providesTags: () => ['Tasks']
         }),
         addTask:build.mutation({
             query: (task:Task) => ({
@@ -48,4 +49,4 @@ export const tasksApi = api.injectEndpoints({
     })
 })
 
-export const { useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation} = tasksApi;
+export const {useGetTasksQuery, useAddTaskMutation, useDeleteTaskMutation, useUpdateTaskMutation} = tasksApi;

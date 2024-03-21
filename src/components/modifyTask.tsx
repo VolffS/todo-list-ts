@@ -1,24 +1,32 @@
 import {createRef, RefObject} from "react";
-import {checkInputFull, statusInClassTask} from "../features/helpers";
+import {checkInputValidity, statusInClass} from "../features/helpers";
 import {useUpdateTaskMutation} from "../api/tasks-api.ts";
 import {Spinner} from "./spiner.tsx";
 import {Task} from "../type/task.ts";
+import {PopUpMessage} from "./popup-message/popUpMessage.tsx";
 
-export function ModifyTask({value, switchModify}: { value: Task, switchModify: () => void }) {
-    let {_id, task, status} = value;
-    let statusClass = `m-0 ps-2 pe-2 pb-2 rounded-4 text-task ${statusInClassTask(status)}`
+interface ModifyTaskProps {
+    value: Task,
+    switchModify: () => void
+}
+
+export const ModifyTask = ({value, switchModify}: ModifyTaskProps) => {
+    const {_id, task, status} = value;
+    const statusClass = `m-0 ps-2 pe-2 pb-2 rounded-4 text-task ${statusInClass(status)}`
     const textareaRef: RefObject<HTMLTextAreaElement> = createRef();
 
-    const [updateTask, {isLoading: isSuccessUpdate}] = useUpdateTaskMutation();
+    const [updateTask, {isLoading: isLoadingUpdate, error}] = useUpdateTaskMutation();
     function successModify() {
         if (textareaRef.current !== null) {
-            if (checkInputFull(textareaRef.current)) {
+            if (checkInputValidity(textareaRef.current)) {
                 const task = {
                     _id: `${_id}`,
                     task: `${textareaRef.current.value}`,
                     status: `${status}`,
                 }
-                updateTask(task).finally(() => switchModify())
+                updateTask(task)
+                    .unwrap()
+                    .then(() => switchModify())
             }
         }
     }
@@ -26,9 +34,9 @@ export function ModifyTask({value, switchModify}: { value: Task, switchModify: (
     return (
         <>
             <div className="flex-grow-1">
-                {isSuccessUpdate
-                    ? <Spinner/>
-                    :
+                {error && <PopUpMessage/>}
+                {isLoadingUpdate && <Spinner/>}
+                {isLoadingUpdate &&
                     <textarea className={statusClass} placeholder="Напиши своё дело"
                               ref={textareaRef}
                               required
@@ -58,3 +66,4 @@ export function ModifyTask({value, switchModify}: { value: Task, switchModify: (
         </>
     );
 }
+

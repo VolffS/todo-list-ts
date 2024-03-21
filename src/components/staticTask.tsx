@@ -1,22 +1,27 @@
 import {MouseEvent} from "react";
-import {statusInClassTask} from "../features/helpers";
-import {ButtonStatus} from "./buttonStatus.js";
+import {statusInClass} from "../features/helpers.ts";
+import {ButtonStatus} from "./buttonStatus.tsx";
 import {Task} from "../type/task.ts";
 import {useDeleteTaskMutation, useUpdateTaskMutation} from "../api/tasks-api.ts";
 import {MiniSpinner} from "./spiner.tsx";
+import {StatusNoteSvg} from "./svg/statusNoteSvg.tsx";
+import {ChangeFieldSvg} from "./svg/changeFieldSvg.tsx";
+import {TrashSvg} from "./svg/trashSvg.tsx";
 
-export function StaticTask({infoTask, stateWideTask, onClickSwitchModify}: {
+interface StaticTaskProps {
     infoTask: Task,
     stateWideTask: boolean,
     onClickSwitchModify: () => void
-}) {
+}
+
+export function StaticTask({infoTask, stateWideTask, onClickSwitchModify}: Readonly<StaticTaskProps>) {
     const {_id, task, status}: Task = infoTask;
-    let statusClass = `m-0 ps-2 pe-2 pb-2 rounded-4 text-task ${statusInClassTask(status)}`;
-    const [updateTask, {isLoading: isSuccessUpdate}] = useUpdateTaskMutation();
-    const [deleteTask, {isLoading: isSuccessDelete}] = useDeleteTaskMutation();
+    const statusClass = `m-0 ps-2 pe-2 pb-2 rounded-4 text-task ${statusInClass(status)}`;
+    const [updateTask, {isLoading: isLoadingUpdate}] = useUpdateTaskMutation();
+    const [deleteTask, {isLoading: isLoadingDelete}] = useDeleteTaskMutation();
 
     const changeState = (ev: MouseEvent<HTMLButtonElement>): void => {
-        let changeStateTask: Task = {
+        const changeStateTask: Task = {
             _id: _id,
             task: task,
             status: ev.currentTarget.value,
@@ -33,8 +38,8 @@ export function StaticTask({infoTask, stateWideTask, onClickSwitchModify}: {
                 <button type="button"
                         className="btn btn-primary dropdown-toggle rounded-bottom d-flex justify-content-center align-items-center"
                         value={status}
-                        data-bs-toggle="dropdown" aria-expanded="false" disabled={isSuccessUpdate}>
-                    {isSuccessUpdate ? <MiniSpinner/> : <StatusNote/>}
+                        data-bs-toggle="dropdown" aria-expanded="false" disabled={isLoadingUpdate}>
+                    {isLoadingUpdate ? <MiniSpinner/> : <StatusNoteSvg/>}
 
                 </button>
                 <ul className="dropdown-menu bg-secondary-subtle status-task position-fixed">
@@ -46,31 +51,16 @@ export function StaticTask({infoTask, stateWideTask, onClickSwitchModify}: {
             <div className="ps-2  form-floating d-grid  d-md-flex justify-content-md-end"
                  style={stateWideTask ? {'flexWrap': "wrap"} : {}}>
                 <button type="button" className="btn btn-primary mb-1 ms-1 btn-modify" onClick={onClickSwitchModify}>
-                    <svg viewBox="0 0 16 16" width="16" height="16">
-                        <use href="#change-field"></use>
-                    </svg>
+                    <ChangeFieldSvg />
                 </button>
                 <button type="button" className="btn btn-outline-danger mb-1 ms-1 btn-delete"
                         onClick={() => deleteTask([_id])}
+                        disabled={isLoadingDelete}
                 >
-                    {isSuccessDelete ? <MiniSpinner/> : <TrashSvg/>}
+                    {isLoadingDelete ? <MiniSpinner/> : <TrashSvg/>}
                 </button>
             </div>
         </div>
     </>);
 }
 
-const TrashSvg = () => {
-    return (
-        <svg viewBox="0 0 16 16" width="16" height="16">
-            <use href="#delete-trash"></use>
-        </svg>
-    );
-}
-const StatusNote = () => {
-    return (
-        <svg viewBox="0 0 16 16" width="16" height="16" style={{"margin": "4px 0px"}}>
-            <use href="#status-note"></use>
-        </svg>
-    );
-}

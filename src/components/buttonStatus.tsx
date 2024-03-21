@@ -1,4 +1,4 @@
-import {statusInText} from "../features/helpers";
+import {statusInRusText} from "../features/helpers";
 import {MouseEvent} from "react";
 
 export const ButtonStatus = ({status, changeState}: {
@@ -7,7 +7,7 @@ export const ButtonStatus = ({status, changeState}: {
 }) => {
     return (
         <button className="dropdown-item text-black" value={status}
-                onClick={changeState}>{statusInText(status)}
+                onClick={changeState}>{statusInRusText(status)}
         </button>
     )
 }

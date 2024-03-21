@@ -1,5 +1,10 @@
 
-export function ChoiceToDelete({cancelDelete, submitDelete}) {
+interface ChoiceToDelete {
+    cancelDelete:()=>void,
+    submitDelete:()=>void
+}
+
+export function ChoiceToDelete({cancelDelete, submitDelete}: ChoiceToDelete) {
     return (
         <div className="btn-group position-fixed bottom-0 end-0 mb-3 me-3 z-3 ">
             <button type="button" id="delete-cancel" className="btn btn-secondary" onClick={cancelDelete}>

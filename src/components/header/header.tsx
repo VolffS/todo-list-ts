@@ -1,5 +1,5 @@
 import './header.scss';
-import peepoGif from '../../assets/img/pepo-g-peepo.gif'
+import peepGif from '../../assets/img/pepo-g-peepo.gif';
 
 export default function Header() {
 	return (<>
@@ -29,7 +29,7 @@ export default function Header() {
 		</header>
 			<div className="container container-header">
 				<div className=" p-3 my-3 shadow-lg p-3 mb-5 text-center text-bg-success rounded-pill header-container">
-					<img className="img-note" src={peepoGif} alt=""/>
+					<img className="img-note" src={peepGif} alt=""/>
 					<h1 className="h2 mb-0 text-white lh-1">Мой список дел</h1>
 					<div className="img-note"></div>
 				</div>

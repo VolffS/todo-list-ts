@@ -3,7 +3,7 @@ import {FilterEnum} from "../assets/filter-enum.ts";
 import {StateToDoList} from "../type/state-todolist.ts";
 
 const initialState: StateToDoList = {
-    isSelectingDelete: false,
+    isSelectingTasks: false,
     filter: FilterEnum.none,
 }
 
@@ -12,7 +12,7 @@ export const stateTodolistSlice = createSlice({
     initialState,
     reducers: {
         toggleIsSelectingDelete: (state)=> {
-            state.isSelectingDelete = !state.isSelectingDelete;
+            state.isSelectingTasks = !state.isSelectingTasks;
         },
         changeFilter: (state, {payload}:{payload:string} )=> {
             state.filter = payload;

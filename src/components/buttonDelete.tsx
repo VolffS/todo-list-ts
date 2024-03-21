@@ -1,7 +1,7 @@
-export const ButtonDelete = ({text, onClickBtn}: { text: string, onClickBtn: () => void }) => {
+export const ButtonDelete = ({text, onBtnClick}: { text: string, onBtnClick: () => void }) => {
     return (
         <li>
-            <button className="dropdown-item text-black" onClick={onClickBtn}>
+            <button className="dropdown-item text-black" onClick={onBtnClick}>
                 <strong>{text}</strong>
             </button>
         </li>

@@ -1,5 +1,5 @@
 
 export interface StateToDoList {
-    isSelectingDelete: boolean,
+    isSelectingTasks: boolean,
     filter:string,
 }

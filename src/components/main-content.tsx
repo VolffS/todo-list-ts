@@ -4,25 +4,26 @@ import {ChoiceToDelete} from './choiceToDelete';
 import {SelectFilter} from "./selectFilter.tsx";
 import {DropdownButtonDelete} from "./dropdownButtonDelete";
 import {ToDoList} from "./toDoList";
-import {useGetTasksQuery} from "../api/api.ts";
+import {useGetTasksQuery} from "../api/tasks-api.ts";
 import {useAddTaskMutation, useDeleteTaskMutation} from "../api/tasks-api.ts";
 import {Task} from "../type/task.ts";
 import {useSelector} from "react-redux";
 import {RootState} from "../store/store.ts";
 import {useActions} from "../hooks/use-actions.ts";
+
 export const MainContent = () => {
     const {data: tasks} = useGetTasksQuery();
-    const {isSelectingDelete}  = useSelector((state: RootState) => state.stateToDoList)
+    const {isSelectingTasks}  = useSelector((state: RootState) => state.stateToDoList)
     const {toggleIsSelectingDelete} = useActions();
-    const [addTask, {isLoading: isSuccessAdd}] = useAddTaskMutation();
+    const [addTask, {isLoading: isLoadedAdd}] = useAddTaskMutation();
     const [deleteTask, {isLoading: isLoadedDelete}] = useDeleteTaskMutation();
 
-    const selectedTask = useRef<Array<string>>([]);
+    const selectedTasks = useRef<Array<string>>([]);
     const inputRef: RefObject<HTMLInputElement> = createRef();
 
-    function addBtnTask() {
+    function addTaskHandler() {
         if (inputRef.current !== null) {
-            let task = {
+            const task = {
                 _id: "",
                 task: `${inputRef.current.value}`,
                 status: "noteWaiting"
@@ -33,28 +34,28 @@ export const MainContent = () => {
         }
     }
 
-    function deleteAllTask() {
+    function deleteAllTasks() {
         deleteTask([]);
     }
     function cancelDelete() {
-        selectedTask.current = [];
+        selectedTasks.current = [];
         toggleIsSelectingDelete();
     }
 
     function submitSelectedDelete() {
-        if (selectedTask.current.length !== 0) {
-            deleteTask(selectedTask.current)
+        if (selectedTasks.current.length !== 0) {
+            deleteTask(selectedTasks.current)
             cancelDelete()
         }
     }
 
-    function deleteTaskByStatus(status: string) {
-        let deletedTasks = tasks.filter((task: Task) => task.status === status).map((task: Task) => task._id);
+    function deleteTasksByStatus(status: string) {
+        const deletedTasks = tasks.filter((task: Task) => task.status === status).map((task: Task) => task._id);
         deletedTasks.length !== 0 && deleteTask(deletedTasks)
     }
 
     function addSelectTask(id: string, element: HTMLInputElement) {
-        let ids = selectedTask.current;
+        const ids = selectedTasks.current;
 
         if (element.checked) {
             ids.push(id);
@@ -66,7 +67,7 @@ export const MainContent = () => {
             }
         }
 
-        selectedTask.current = ids;
+        selectedTasks.current = ids;
     }
 
     return (
@@ -78,7 +79,7 @@ export const MainContent = () => {
                            required
                     />
                     <button type="submit" className="btn btn-success " id="btn-add-note"
-                            onClick={addBtnTask}> {isSuccessAdd ? <MiniSpinner/> : "Добавить"}
+                            onClick={addTaskHandler} disabled={isLoadedAdd}> {isLoadedAdd ? <MiniSpinner/> : "Добавить"}
                     </button>
                 </div>
                 <div className="mb-1  form-floating d-grid  d-md-flex justify-content-md-end">
@@ -86,12 +87,12 @@ export const MainContent = () => {
                         <SelectFilter />
                     </div>
                     <div className="btn-group ">
-                        <DropdownButtonDelete deleteAllTask={deleteAllTask}
+                        <DropdownButtonDelete deleteAllTasks={deleteAllTasks}
                                               isLoadedDelete={isLoadedDelete}
-                                              deleteTaskByStatus={deleteTaskByStatus}/>
+                                              deleteTasksByStatus={deleteTasksByStatus}/>
                     </div>
                 </div>
-                {isSelectingDelete && <ChoiceToDelete cancelDelete={cancelDelete} submitDelete={submitSelectedDelete}/>}
+                {isSelectingTasks && <ChoiceToDelete cancelDelete={cancelDelete} submitDelete={submitSelectedDelete}/>}
             </div>
             <ToDoList addSelectTask={addSelectTask} />
         </main>
