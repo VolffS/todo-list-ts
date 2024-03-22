@@ -1,7 +1,7 @@
 import {FilterEnum} from "../assets/filter-enum.ts";
 import {Task} from "../type/task.ts";
 
-export function statusInClass(status: string):string {
+export function getClassByStatus(status: string):string {
     switch (status) {
 
         case FilterEnum.noteWaiting:
@@ -17,7 +17,7 @@ export function statusInClass(status: string):string {
             return "bg-transparent";
     }
 }
-export function statusInRusText(status: string):string {
+export function getRusTextByStatus(status: string):string {
     switch (status) {
 
         case FilterEnum.noteWaiting:
@@ -41,10 +41,10 @@ export function checkInputValidity(element: HTMLInputElement| HTMLTextAreaElemen
 export function filterByStatus(tasks: Array<Task>, filter: string): Task[] {
 
     if (filter !== "") {
-        let sortToDoList = tasks.slice();
-        sortToDoList = sortToDoList.filter((element) => element.status === filter);
+        let filterToDoList = tasks.slice();
+        filterToDoList = filterToDoList.filter((element) => element.status === filter);
 
-        return sortToDoList
+        return filterToDoList
     }
 
     return tasks;

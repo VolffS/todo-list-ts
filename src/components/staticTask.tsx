@@ -1,5 +1,5 @@
 import {MouseEvent} from "react";
-import {statusInClass} from "../features/helpers.ts";
+import {getClassByStatus} from "../features/helpers.ts";
 import {ButtonStatus} from "./buttonStatus.tsx";
 import {Task} from "../type/task.ts";
 import {useDeleteTaskMutation, useUpdateTaskMutation} from "../api/tasks-api.ts";
@@ -7,6 +7,7 @@ import {MiniSpinner} from "./spiner.tsx";
 import {StatusNoteSvg} from "./svg/statusNoteSvg.tsx";
 import {ChangeFieldSvg} from "./svg/changeFieldSvg.tsx";
 import {TrashSvg} from "./svg/trashSvg.tsx";
+import {toast} from "react-toastify";
 
 interface StaticTaskProps {
     infoTask: Task,
@@ -16,7 +17,7 @@ interface StaticTaskProps {
 
 export function StaticTask({infoTask, stateWideTask, onClickSwitchModify}: Readonly<StaticTaskProps>) {
     const {_id, task, status}: Task = infoTask;
-    const statusClass = `m-0 ps-2 pe-2 pb-2 rounded-4 text-task ${statusInClass(status)}`;
+    const statusClass = `m-0 ps-2 pe-2 pb-2 rounded-4 text-task ${getClassByStatus(status)}`;
     const [updateTask, {isLoading: isLoadingUpdate}] = useUpdateTaskMutation();
     const [deleteTask, {isLoading: isLoadingDelete}] = useDeleteTaskMutation();
 
@@ -26,7 +27,14 @@ export function StaticTask({infoTask, stateWideTask, onClickSwitchModify}: Reado
             task: task,
             status: ev.currentTarget.value,
         };
-        updateTask(changeStateTask);
+        updateTask(changeStateTask)
+            .unwrap()
+            .catch((error)=> (toast.error(`${error.status}`)));
+    }
+    const deleteTaskHandler = () => {
+        deleteTask([_id])
+            .unwrap()
+            .catch((error)=> (toast.error(`${error.status}`)));
     }
 
     return (<>
@@ -54,7 +62,7 @@ export function StaticTask({infoTask, stateWideTask, onClickSwitchModify}: Reado
                     <ChangeFieldSvg />
                 </button>
                 <button type="button" className="btn btn-outline-danger mb-1 ms-1 btn-delete"
-                        onClick={() => deleteTask([_id])}
+                        onClick={deleteTaskHandler}
                         disabled={isLoadingDelete}
                 >
                     {isLoadingDelete ? <MiniSpinner/> : <TrashSvg/>}

@@ -12,9 +12,8 @@ interface ToDoList {
 }
 
 export const ToDoList = ({addSelectTask}: ToDoList) => {
-    const {data: tasks, isLoading} = useGetTasksQuery();
+    const {data: tasks, isLoading, isSuccess} = useGetTasksQuery();
     const {filter} = useSelector((state: RootState) => state.stateToDoList)
-
     const visibleTask = useMemo(
         () => filterByStatus(tasks, filter),
         [tasks, filter]
@@ -24,7 +23,7 @@ export const ToDoList = ({addSelectTask}: ToDoList) => {
         <div className="my-3 p-3 bg-body rounded shadow-sm">
             <ul className="list-group">
                 {isLoading && <Spinner/>}
-                {!isLoading && visibleTask.map((task: Task) => <Deal key={task._id.toString()} value={task}
+                {(!isLoading && isSuccess) && visibleTask.map((task: Task) => <Deal key={task._id.toString()} value={task}
                                                                      addSelectTask={addSelectTask}
                 />)}
             </ul>

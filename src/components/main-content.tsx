@@ -10,6 +10,7 @@ import {Task} from "../type/task.ts";
 import {useSelector} from "react-redux";
 import {RootState} from "../store/store.ts";
 import {useActions} from "../hooks/use-actions.ts";
+import {toast} from "react-toastify";
 
 export const MainContent = () => {
     const {data: tasks} = useGetTasksQuery();
@@ -31,11 +32,15 @@ export const MainContent = () => {
             inputRef.current.value = "";
 
             addTask(task)
+                .unwrap()
+                .catch((error)=> (toast.error(`${error.status}`)));
         }
     }
 
     function deleteAllTasks() {
-        deleteTask([]);
+        deleteTask([])
+            .unwrap()
+            .catch((error)=> (toast.error(`${error.status}`)));;
     }
     function cancelDelete() {
         selectedTasks.current = [];
@@ -45,6 +50,8 @@ export const MainContent = () => {
     function submitSelectedDelete() {
         if (selectedTasks.current.length !== 0) {
             deleteTask(selectedTasks.current)
+                .unwrap()
+                .catch((error)=> (toast.error(`${error.status}`)));
             cancelDelete()
         }
     }

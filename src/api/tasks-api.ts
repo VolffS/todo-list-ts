@@ -1,9 +1,6 @@
 import {api} from "./api.ts";
 import {Task} from "../type/task.ts";
 
-const header = {
-    'Content-Type': 'application/json'
-}
 export const tasksApi = api.injectEndpoints({
     endpoints: build => ({
         getTasks: build.query({
@@ -16,7 +13,6 @@ export const tasksApi = api.injectEndpoints({
                 url:'/',
                 method:"POST",
                 mode: "cors",
-                headers: header,
             }),
             invalidatesTags: ()=>[{
                 type: 'Tasks'
@@ -28,7 +24,6 @@ export const tasksApi = api.injectEndpoints({
                 url:'/',
                 method:"DELETE",
                 mode: "cors",
-                headers: header,
             }),
             invalidatesTags: ()=>[{
                 type: 'Tasks'
@@ -40,7 +35,6 @@ export const tasksApi = api.injectEndpoints({
                 url:'/',
                 method:"PUT",
                 mode: "cors",
-                headers: header,
             }),
             invalidatesTags: ()=>[{
                 type: 'Tasks'

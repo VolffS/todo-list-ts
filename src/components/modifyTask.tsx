@@ -1,9 +1,10 @@
 import {createRef, RefObject} from "react";
-import {checkInputValidity, statusInClass} from "../features/helpers";
+import {checkInputValidity, getClassByStatus} from "../features/helpers";
 import {useUpdateTaskMutation} from "../api/tasks-api.ts";
 import {Spinner} from "./spiner.tsx";
 import {Task} from "../type/task.ts";
 import {PopUpMessage} from "./popup-message/popUpMessage.tsx";
+import {toast} from "react-toastify";
 
 interface ModifyTaskProps {
     value: Task,
@@ -12,7 +13,7 @@ interface ModifyTaskProps {
 
 export const ModifyTask = ({value, switchModify}: ModifyTaskProps) => {
     const {_id, task, status} = value;
-    const statusClass = `m-0 ps-2 pe-2 pb-2 rounded-4 text-task ${statusInClass(status)}`
+    const statusClass = `m-0 ps-2 pe-2 pb-2 rounded-4 text-task ${getClassByStatus(status)}`
     const textareaRef: RefObject<HTMLTextAreaElement> = createRef();
 
     const [updateTask, {isLoading: isLoadingUpdate, error}] = useUpdateTaskMutation();
@@ -27,16 +28,15 @@ export const ModifyTask = ({value, switchModify}: ModifyTaskProps) => {
                 updateTask(task)
                     .unwrap()
                     .then(() => switchModify())
+                    .catch((error)=> (toast.error(`${error.status}`)))
             }
         }
     }
-
     return (
         <>
             <div className="flex-grow-1">
-                {error && <PopUpMessage/>}
                 {isLoadingUpdate && <Spinner/>}
-                {isLoadingUpdate &&
+                {!isLoadingUpdate &&
                     <textarea className={statusClass} placeholder="Напиши своё дело"
                               ref={textareaRef}
                               required
