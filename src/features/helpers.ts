@@ -1,49 +1,51 @@
-export function statusInClassTask(status) {
+import {FilterEnum} from "../assets/filter-enum.ts";
+import {Task} from "../type/task.ts";
+
+export function getClassByStatus(status: string):string {
     switch (status) {
 
-        case "noteWaiting":
+        case FilterEnum.noteWaiting:
             return  "bg-transparent";
 
-        case "noteSuccess":
+        case FilterEnum.noteSuccess:
             return "text-bg-success";
 
-        case "noteNotSuccess":
+        case FilterEnum.noteNotSuccess:
             return "text-bg-danger";
 
         default :
             return "bg-transparent";
     }
 }
-export function statusInText(status) {
+export function getRusTextByStatus(status: string):string {
     switch (status) {
 
-        case "noteWaiting":
+        case FilterEnum.noteWaiting:
             return  "Ожидает";
 
-        case "noteSuccess":
+        case FilterEnum.noteSuccess:
             return "Выполнено";
 
-        case "noteNotSuccess":
+        case FilterEnum.noteNotSuccess:
             return "Не выполнено";
 
         default :
-            return "Ожидает";
+            return "Не найдено";
     }
 }
 
-export function checkInputFull(element) {
+export function checkInputValidity(element: HTMLInputElement| HTMLTextAreaElement) {
     return  element.checkValidity()
 }
 
-export function filterByStatus(tasks, filter) {
+export function filterByStatus(tasks: Array<Task>, filter: string): Task[] {
 
-    let sortToDoList = tasks.slice();
+    if (filter !== "") {
+        let filterToDoList = tasks.slice();
+        filterToDoList = filterToDoList.filter((element) => element.status === filter);
 
-    if (filter !== ""){
-        sortToDoList = sortToDoList.filter((element)=>{
-            return element.status === filter;
-        });
+        return filterToDoList
     }
 
-    return sortToDoList;
+    return tasks;
 }

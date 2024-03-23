@@ -1,122 +1,68 @@
-import {createRef, useEffect, useState} from "react";
-import {initiationToDoList} from "../assets/initiation-todo-list.ts";
+import {createRef, RefObject, useRef} from "react";
 import {MiniSpinner} from "./spiner";
 import {ChoiceToDelete} from './choiceToDelete';
 import {SelectFilter} from "./selectFilter.tsx";
-import {
-    getToDoListToServer,
-    requestToServerAdd,
-    requestToServerDelete,
-    requestToServerPut
-} from "../features/interaction-with-server";
-import {filterByStatus} from "../features/helpers"
-import {changeStatusTask} from '../features/crud';
 import {DropdownButtonDelete} from "./dropdownButtonDelete";
 import {ToDoList} from "./toDoList";
+import {useGetTasksQuery} from "../api/tasks-api.ts";
+import {useAddTaskMutation, useDeleteTaskMutation} from "../api/tasks-api.ts";
+import {Task} from "../type/task.ts";
+import {useSelector} from "react-redux";
+import {RootState} from "../store/store.ts";
+import {useActions} from "../hooks/use-actions.ts";
+import {toast} from "react-toastify";
 
 export const MainContent = () => {
-    const [stateToDoList, setToDoList] = useState(initiationToDoList);
-    const [stateIsLoad, setIsLoad] = useState(true);
-    const [stateIsAdd, setIsAdd] = useState(false);
+    const {data: tasks} = useGetTasksQuery();
+    const {isSelectingTasks}  = useSelector((state: RootState) => state.stateToDoList)
+    const {toggleIsSelectingDelete} = useActions();
+    const [addTask, {isLoading: isLoadedAdd}] = useAddTaskMutation();
+    const [deleteTask, {isLoading: isLoadedDelete}] = useDeleteTaskMutation();
 
-    const [stateSelectingWhatDelete, setSelectingWhatDelete] = useState(false);
-    const inputRef = createRef();
+    const selectedTasks = useRef<Array<string>>([]);
+    const inputRef: RefObject<HTMLInputElement> = createRef();
 
-    function freshStateToDoList() {
-        getToDoListToServer().then(tasks => {
-            if (stateToDoList.filter !== "") {
-                setToDoList(prevState => ({
-                    ...prevState,
-                    tasks: tasks,
-                    filterTasks: filterByStatus(tasks, stateToDoList.filter)
-                }))
-            } else {
-                setToDoList(prevState => ({
-                    ...prevState,
-                    tasks: tasks,
-                    filterTasks: tasks
-                }))
+    function addTaskHandler() {
+        if (inputRef.current !== null) {
+            const task = {
+                _id: "",
+                task: `${inputRef.current.value}`,
+                status: "noteWaiting"
             }
-        }).finally(() => setIsLoad(false));
-    }
+            inputRef.current.value = "";
 
-    useEffect(() => {
-        freshStateToDoList()
-    }, []);
-
-    function addBtnTask() {
-        setIsAdd(true);
-        let task = {
-            task: `${inputRef.current.value}`,
-            status: "noteWaiting"
-        }
-        inputRef.current.value = "";
-
-        requestToServerAdd(task).finally(() => {
-            freshStateToDoList();
-            setIsAdd(false)
-        });
-    }
-
-    function deleteBtnTask(id) {
-        let prevSelectTasksId = stateToDoList.selectTasksId;
-        stateToDoList.selectTasksId = id;
-
-        requestToServerDelete(id).finally(() => {
-            stateToDoList.selectTasksId = prevSelectTasksId;
-            freshStateToDoList()
-        });
-    }
-
-    function modifyBtnTask(task) {
-        requestToServerPut(task).finally(() => {
-            freshStateToDoList()
-        });
-    }
-
-    function changeStatus(status, id) {
-        stateToDoList.tasks = changeStatusTask(stateToDoList.tasks, status, id)
-        if (stateToDoList.filter !== "") {
-            setToDoList(prevState => ({
-                ...prevState,
-                tasks: changeStatusTask(stateToDoList.tasks, status, id)
-            }))
+            addTask(task)
+                .unwrap()
+                .catch((error)=> (toast.error(`${error.status}`)));
         }
     }
 
-    function filterTask(status:string):void {
-        setToDoList(prevState => ({
-            ...prevState,
-            filterTasks: filterByStatus(prevState.tasks, status),
-            filter: status
-        }));
+    function deleteAllTasks() {
+        deleteTask([])
+            .unwrap()
+            .catch((error)=> (toast.error(`${error.status}`)));;
     }
-
     function cancelDelete() {
-        stateToDoList.selectTasksId = [];
-        setSelectingWhatDelete(false);
+        selectedTasks.current = [];
+        toggleIsSelectingDelete();
     }
 
-    function submitDelete() {
-        if (stateToDoList.selectTasksId.length !== 0) {
-            let temp = stateToDoList.selectTasksId
-            stateToDoList.selectTasksId = []
-            deleteBtnTask(temp)
+    function submitSelectedDelete() {
+        if (selectedTasks.current.length !== 0) {
+            deleteTask(selectedTasks.current)
+                .unwrap()
+                .catch((error)=> (toast.error(`${error.status}`)));
+            cancelDelete()
         }
     }
 
-    function deleteTaskByStatus(status) {
-        let deletedTasks = stateToDoList.tasks.filter(task => task.status === status).map(task => task._id);
-
-        if (deletedTasks.length !== 0) {
-            requestToServerDelete(deletedTasks).finally(() => {
-                freshStateToDoList()
-            });
-        }
+    function deleteTasksByStatus(status: string) {
+        const deletedTasks = tasks.filter((task: Task) => task.status === status).map((task: Task) => task._id);
+        deletedTasks.length !== 0 && deleteTask(deletedTasks)
     }
 
-    function addSelectTask(id, element) {
-        let ids = stateToDoList.selectTasksId;
+    function addSelectTask(id: string, element: HTMLInputElement) {
+        const ids = selectedTasks.current;
 
         if (element.checked) {
             ids.push(id);
@@ -128,9 +74,8 @@ export const MainContent = () => {
             }
         }
 
-        stateToDoList.selectTasksId = ids;
+        selectedTasks.current = ids;
     }
-
 
     return (
         <main className="container">
@@ -138,30 +83,25 @@ export const MainContent = () => {
                 <div className="mb-2  input-group">
                     <input type="text" ref={inputRef} className="form-control" id="recording-task" name="note"
                            placeholder="Запись"
-                           required/>
+                           required
+                    />
                     <button type="submit" className="btn btn-success " id="btn-add-note"
-                            onClick={addBtnTask}> {stateIsAdd ? <MiniSpinner/> : "Добавить"}
+                            onClick={addTaskHandler} disabled={isLoadedAdd}> {isLoadedAdd ? <MiniSpinner/> : "Добавить"}
                     </button>
                 </div>
                 <div className="mb-1  form-floating d-grid  d-md-flex justify-content-md-end">
                     <div className="col-md-3 me-2 rounded-start">
-                        <SelectFilter callback={filterTask}/>
+                        <SelectFilter />
                     </div>
                     <div className="btn-group ">
-                        <DropdownButtonDelete deleteBtnTask={deleteBtnTask}
-                                              setSelectingWhatDelete={setSelectingWhatDelete}
-                                              deleteTaskByStatus={deleteTaskByStatus}/>
+                        <DropdownButtonDelete deleteAllTasks={deleteAllTasks}
+                                              isLoadedDelete={isLoadedDelete}
+                                              deleteTasksByStatus={deleteTasksByStatus}/>
                     </div>
                 </div>
-                {stateSelectingWhatDelete && <ChoiceToDelete cancelDelete={cancelDelete} submitDelete={submitDelete}/>}
+                {isSelectingTasks && <ChoiceToDelete cancelDelete={cancelDelete} submitDelete={submitSelectedDelete}/>}
             </div>
-            {<ToDoList tasks={stateToDoList.filterTasks} isLoaded={stateIsLoad}
-                       stateSelectingWhatDelete={stateSelectingWhatDelete}
-                       deleteBtnTask={deleteBtnTask}
-                       changeStatus={changeStatus}
-                       addSelectTask={addSelectTask}
-                       modifyBtnTask={modifyBtnTask}
-            />}
+            <ToDoList addSelectTask={addSelectTask} />
         </main>
     );
 }

@@ -1,7 +1,7 @@
 export function Spinner() {
     return (
         <div className="text-center">
-            <div className="spinner-border text-primary " style={{width: "2.6rem", height: "2.6rem"}} role="status">
+            <div className="spinner-border text-primary " style={{width: "2.6rem", height: "2.6rem"}}>
                 <span className="visually-hidden">Загрузка...</span>
             </div>
         </div>
@@ -10,7 +10,7 @@ export function Spinner() {
 export function MiniSpinner() {
     return (
         <div className="text-center">
-            <div className="spinner-border text-primary " style={{width: "1rem", height: "1rem"}} role="status">
+            <div className="spinner-border text-warning " style={{width: "1rem", height: "1rem"}}>
                 <span className="visually-hidden">Загрузка...</span>
             </div>
         </div>
